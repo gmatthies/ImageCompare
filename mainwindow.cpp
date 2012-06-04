@@ -124,6 +124,8 @@ void MainWindow::handleImageCompare()
 
     paths.push_back( mBaseDirectory );
 
+    mFileList.clear();
+
     QStringList fileTypes;
     fileTypes << "*.jpg" << "*.png" << "*.bmp";
 
@@ -146,7 +148,6 @@ void MainWindow::handleImageCompare()
 
 void MainWindow::performImageCompare()
 {
-    int fileCount = mFileList.size();
     QString statusMsg = "Processing %1 of %2 files";
 
     // Aspect ratios for the two images to compare
@@ -159,7 +160,7 @@ void MainWindow::performImageCompare()
     {
         QImage imageToCompare( mFileList[i] );
 
-        mCompareStatus->setText( statusMsg.arg(i).arg(mFileList.size()) );
+        mCompareStatus->setText( statusMsg.arg(i + 1).arg(mFileList.size()) );
 
         if( imageToCompare.isNull() )
         {
@@ -170,7 +171,7 @@ void MainWindow::performImageCompare()
 
         for( int j = 0; j < mFileList.size(); j++ )
         {
-            if( i == j )
+            if( mFileList[i] == mFileList[j] )
             {
                 continue;
             }
@@ -228,7 +229,12 @@ void MainWindow::performImageCompare()
 
                 workerDir.remove( mFileList[j] );
                 mFileList.erase( mFileList.begin() + j );
+
+                // Since we've shrunk the vector, we need to decrement j
+                // So that we can get the new file which is now in the jth index
+                j--;
             }
         }
     }
+    mCompareStatus->setText( statusMsg.arg(mFileList.size()).arg(mFileList.size()) );
 }

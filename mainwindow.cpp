@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+using namespace std;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -46,8 +47,10 @@ MainWindow::MainWindow(QWidget *parent)
     mStartButton->setFont( serifFont );
     connect( mStartButton, SIGNAL( clicked() ), this, SLOT( handleImageCompare() ) );
 
-    mCompareStatus = new QLabel( "Processed 0 of X images" );
+    mCompareStatus = new QLabel( "Processing 1 of X images" );
+    serifFont.setPointSize( 12 );
     mCompareStatus->setFont( serifFont );
+    mCompareStatus->setFixedHeight( 50 );
     mCompareStatus->hide();
 
     mMainLayout = new QVBoxLayout();
@@ -126,7 +129,14 @@ void MainWindow::handleImageCompare()
 
     QStringList imageFiles = findFilesRecursively( paths, fileTypes );
 
+    for( int i = 0; i < imageFiles.count(); i++ )
+    {
+        mFileList.push_back( imageFiles[i] );
+    }
+
     mCompareStatus->show();
+
+    performImageCompare();
 
     int foo = 10;
 
@@ -134,3 +144,91 @@ void MainWindow::handleImageCompare()
 
 }
 
+void MainWindow::performImageCompare()
+{
+    int fileCount = mFileList.size();
+    QString statusMsg = "Processing %1 of %2 files";
+
+    // Aspect ratios for the two images to compare
+    double imageBaseAR;
+    double imageCompareAR;
+
+    QDir workerDir;
+
+    for( int i = 0; i < mFileList.size(); i++ )
+    {
+        QImage imageToCompare( mFileList[i] );
+
+        mCompareStatus->setText( statusMsg.arg(i).arg(mFileList.size()) );
+
+        if( imageToCompare.isNull() )
+        {
+            continue;
+        }
+
+        imageBaseAR = (double)imageToCompare.width() / imageToCompare.height();
+
+        for( int j = 0; j < mFileList.size(); j++ )
+        {
+            if( i == j )
+            {
+                continue;
+            }
+
+            QImage temp( mFileList[j] );
+
+            if( temp.isNull() )
+            {
+                continue;
+            }
+
+            // Ok, we have two valid images, get second one's aspect ratio
+            imageCompareAR = (double)temp.width() / temp.height();
+
+            if( imageBaseAR != imageCompareAR )
+            {
+                continue;
+            }
+
+            // Ok, we have two images with the same aspect ratio, we can now compare
+            QSize imageToCompareSize = imageToCompare.size();
+            QSize tempSize = temp.size();
+
+            QImage baseImage = imageToCompare;
+            QImage compareImage = temp;
+
+            bool isBaseLarger = false;
+
+            if( imageToCompareSize != tempSize )
+            {
+                //Which is larger?
+                int imageToComparePixels = imageToCompareSize.height() * imageToCompareSize.width();
+                int tempPixels = tempSize.height() * tempSize.width();
+
+                if( imageToComparePixels > tempPixels )
+                {
+                    baseImage = imageToCompare.scaled( tempSize );
+                    isBaseLarger = true;
+                }
+                else
+                {
+                    compareImage = temp.scaled( imageToCompareSize );
+                }
+            }
+
+            if( baseImage == compareImage )
+            {
+                // We have a match, we can get rid of one of them
+                if( !isBaseLarger )
+                {
+                    // move larger one to the front
+                    std::swap( mFileList[i], mFileList[j] );
+                    imageToCompare = QImage( mFileList[j] );
+                }
+
+                workerDir.remove( mFileList[j] );
+                mFileList.erase( mFileList.begin() + j );
+            }
+        }
+    }
+}

@@ -25,6 +25,7 @@ class MainWindow : public QMainWindow
 
     protected:
         QStringList findFilesRecursively ( QStringList paths, QStringList fileTypes );
+        void        performImageCompare();
 
         QString         mBaseDirectory;
 

@@ -36,19 +36,25 @@ MainWindow::MainWindow(QWidget *parent)
 
     QFont serifFont("Times", 14, QFont::Normal);
 
+    mDirectory = new QComboBox();
+    mDirectory->addItem( QString( "<Select Base Directory>" ) );
+    connect( mDirectory, SIGNAL( activated(int) ), this, SLOT( handleBaseDirectory() ) );
+
     mStartButton = new QPushButton( "Start Compare" );
+    mStartButton->setEnabled( false );
     mStartButton->setFixedSize(150, 50);
     mStartButton->setFont( serifFont );
     connect( mStartButton, SIGNAL( clicked() ), this, SLOT( handleImageCompare() ) );
 
-    mDirectory = new QComboBox();
-    mDirectory->addItem( QString( "<Select Base Directory>" ) );
-    connect( mDirectory, SIGNAL( activated(int) ), this, SLOT( handleBaseDirectory() ) );
+    mCompareStatus = new QLabel( "Processed 0 of X images" );
+    mCompareStatus->setFont( serifFont );
+    mCompareStatus->hide();
 
     mMainLayout = new QVBoxLayout();
 
     mMainLayout->addWidget( mDirectory );
     mMainLayout->addWidget( mStartButton );
+    mMainLayout->addWidget( mCompareStatus );
     mMainLayout->setAlignment( Qt::AlignHCenter );
     mMainLayout->setSpacing( 30 );
 
@@ -106,21 +112,21 @@ QStringList MainWindow::findFilesRecursively ( QStringList paths, QStringList fi
 void MainWindow::handleBaseDirectory()
 {
     mBaseDirectory = QFileDialog::getExistingDirectory( this, tr( "Base Directory" ) );
-    std::cout << "hello";
+    mStartButton->setEnabled( true );
 }
 
 void MainWindow::handleImageCompare()
 {
     QStringList paths;
 
-    QDir dir;
-
-    paths.push_back( dir.currentPath() );
+    paths.push_back( mBaseDirectory );
 
     QStringList fileTypes;
     fileTypes << "*.jpg" << "*.png" << "*.bmp";
 
     QStringList imageFiles = findFilesRecursively( paths, fileTypes );
+
+    mCompareStatus->show();
 
     int foo = 10;
 

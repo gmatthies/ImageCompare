@@ -9,6 +9,7 @@
 #include <QString>
 #include <QStringList>
 #include <QWidget>
+#include <vector>
 
 class MainWindow : public QMainWindow
 {
@@ -30,7 +31,9 @@ class MainWindow : public QMainWindow
         QVBoxLayout     *mMainLayout;
         QPushButton     *mStartButton;
         QComboBox       *mDirectory;
+        QLabel          *mCompareStatus;
 
+        std::vector< QString > mFileList;
 };
 
 #endif // MAINWINDOW_H

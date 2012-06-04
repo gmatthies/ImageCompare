@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 
 #include <algorithm>
+#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
@@ -36,16 +37,20 @@ MainWindow::MainWindow(QWidget *parent)
     QFont serifFont("Times", 14, QFont::Normal);
 
     mStartButton = new QPushButton( "Start Compare" );
-    mStartButton->setFixedWidth(150);
-    mStartButton->setFixedHeight(50);
+    mStartButton->setFixedSize(150, 50);
     mStartButton->setFont( serifFont );
     connect( mStartButton, SIGNAL( clicked() ), this, SLOT( handleImageCompare() ) );
 
+    mDirectory = new QComboBox();
+    mDirectory->addItem( QString( "<Select Base Directory>" ) );
+    connect( mDirectory, SIGNAL( activated(int) ), this, SLOT( handleBaseDirectory() ) );
 
     mMainLayout = new QVBoxLayout();
 
+    mMainLayout->addWidget( mDirectory );
     mMainLayout->addWidget( mStartButton );
     mMainLayout->setAlignment( Qt::AlignHCenter );
+    mMainLayout->setSpacing( 30 );
 
     centralWidget->setLayout(mMainLayout);
 
@@ -96,6 +101,12 @@ QStringList MainWindow::findFilesRecursively ( QStringList paths, QStringList fi
         }
     }
     return result; // yields absolute paths
+}
+
+void MainWindow::handleBaseDirectory()
+{
+    mBaseDirectory = QFileDialog::getExistingDirectory( this, tr( "Base Directory" ) );
+    std::cout << "hello";
 }
 
 void MainWindow::handleImageCompare()

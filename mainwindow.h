@@ -20,12 +20,16 @@ class MainWindow : public QMainWindow
 
     protected slots:
         void        handleImageCompare();
+        void        handleBaseDirectory();
 
     protected:
         QStringList findFilesRecursively ( QStringList paths, QStringList fileTypes );
 
-        QVBoxLayout *mMainLayout;
-        QPushButton *mStartButton;
+        QString         mBaseDirectory;
+
+        QVBoxLayout     *mMainLayout;
+        QPushButton     *mStartButton;
+        QComboBox       *mDirectory;
 
 };
 
